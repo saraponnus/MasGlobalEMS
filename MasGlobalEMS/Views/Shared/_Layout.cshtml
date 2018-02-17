@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("Employee Management System", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Home", "Index", "Home", new { area = "" }, null)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - EMS System</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+
+
+    <script>
+        $("#GetEmp").click(function ()
+        {
+            empRemoveRows()
+            $("#empTable tbody").append(empBuildTableHeaderRow());
+           
+            var id = $('#empId').val();
+            if(id != null || id.trim() !='')
+            {
+                empList(id)
+            }
+            else
+            {
+                empList(-1)
+            }
+        }
+        );
+    function empList(id) {
+
+        var idval = id;
+        var Url = '/api/Employees/';
+        if (id != -1)
+            Url = Url + id ;
+        //alert(Url)
+
+        // Call Web API to get a list of emp
+        $.ajax({
+            url: Url,
+            type: 'GET',
+            dataType: 'json',
+            success: function (employees) {
+
+                empListSuccess(employees);
+            },
+            error: function (request, message, error) {
+                empRemoveRows()
+                //handleException(request, message, error);
+            }
+        });
+
+    }
+
+    function empListSuccess(employees) {
+        // Iterate over the collection of data
+        $.each(employees, function (index, emp) {
+            // Add a row to the emp table
+            empAddRow(emp);
+        });
+    }
+    function empAddRow(emp) {
+        // Check if <tbody> tag exists, add one if not
+        if ($("#empTable tbody").length == 0) {
+            $("#empTable").append("<tbody></tbody>");
+        }
+        // Append row to <table>
+        $("#empTable tbody").append(
+          empBuildTableRow(emp));
+    }
+
+    function empRemoveRows() {
+        // Check if <tbody> tag exists, add one if not
+        //if ($("#empTable tbody").length == 0) {
+        //    $("#empTable").append("<tbody></tbody>");
+        //}
+       
+        $("#empTable tr").remove();
+    }
+
+    function empBuildTableRow(emp) {
+        var ret =
+          "<tr>" +
+           "<td>" + emp.ID + "</td>" +
+           "<td>" + emp.Name + "</td>"
+            + "<td>" + emp.ContractTypeName + "</td>" +
+             "<td>" + emp.RoleId + "</td>" +
+           "<td>" + emp.RoleName + "</td>"
+            + "<td>" + emp.RoleDescription + "</td>" +
+               "<td>" + emp.HourlySalary + "</td>" +
+           "<td>" + emp.MonthlySalary + "</td>"
+            + "<td>" + emp.AnnualSalary + "</td>" +
+          "</tr>";
+        return ret;
+    }
+
+    function empBuildTableHeaderRow() {
+        var ret =
+          "<tr><th>Emp ID</th><th>Emp Name</th><th>Contractor Type</th>" +
+          "<th>Role ID</th><th>Role Name</th><th>Role Desc</th><th>Hourly Salary</th>" +
+          "<th>Monthly Salary</th><th>Yearly Salary</th></tr>"
+        return ret;
+    }
+    function handleException(request, message,
+                             error) {
+        var msg = "";
+        msg += "Code: " + request.status + "\n";
+        msg += "Text: " + request.statusText + "\n";
+        if (request.responseJSON != null) {
+            msg += "Message" +
+                request.responseJSON.Message + "\n";
+        }
+        alert(msg);
+    }
+    $(document).ready(function () {
+        empList(-1);
+    });
+
+
+
+    </script>
+</body>
+</html>
